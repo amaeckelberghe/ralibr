@@ -9,7 +9,6 @@
 #' @param Output
 #'
 #' @return
-#' @export
 #'
 #' @examples
 BootstrapCDS <- function(MarketData, ZeroData, ValuationDate, Convention, OutputDates = NULL, LGD, Output = "Hazard"){
