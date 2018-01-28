@@ -1,11 +1,26 @@
+#' Title
+#'
+#' @param EffectiveDate
+#' @param MaturityDate
+#' @param ValDate
+#' @param SecondLast
+#' @param CouponFreq
+#' @param BusDayConv
+#' @param IMM
+#' @param Output
+#'
+#' @return
+#' @export
+#'
+#' @examples
 GenerateDates <- function(EffectiveDate, MaturityDate, ValDate = NULL, SecondLast = NULL, CouponFreq = "Monthly", BusDayConv = "F", IMM = FALSE, Output = "Vector"){
         # Function generates payment dates moving backward from the Maturity Date
         # Optional ValDate argument cuts off sequence just before ValDate (= Clean)
-        
+
         # Parsing Date to correct format
         EffectiveDate <- ParseDate(DateToParse = EffectiveDate)
         MaturityDate <- ParseDate(DateToParse = MaturityDate)
-        
+
         NextIMM <- function(Date){
                 Month <- month(Date)
                 Year <- year(Date)
@@ -22,13 +37,13 @@ GenerateDates <- function(EffectiveDate, MaturityDate, ValDate = NULL, SecondLas
                 Date <- dmy(paste0(Day,"-",Month,"-",Year))
                 return(Date)
         }
-        
+
         if(IMM){
                 CouponFreq <- "Q"
                 MaturityDate <- NextIMM(Date = MaturityDate)
                 SecondLast <- NULL # Ignore this if we use IMM dates
         }
-        
+
         # Check if CouponFreq is numeric or string and convert accordingly
         if (is.character(CouponFreq)){
                 if(toupper(CouponFreq)=="A"|toupper(CouponFreq)=="ANNUAL"){Step <- paste(-12, "month")}
@@ -48,7 +63,7 @@ GenerateDates <- function(EffectiveDate, MaturityDate, ValDate = NULL, SecondLas
         else{
                 stop("Wrong Coupon Frequency input")
         }
-        
+
         if(!is.null(SecondLast)){
                 SecondLast <- ParseDate(DateToParse = SecondLast)
                 Dates <- seq.Date(from = SecondLast,to = EffectiveDate,by = Step)
@@ -56,29 +71,29 @@ GenerateDates <- function(EffectiveDate, MaturityDate, ValDate = NULL, SecondLas
         }else{
                 Dates <- seq.Date(from = MaturityDate,to = EffectiveDate,by = Step)
         }
-        
+
         # Manual override in case the EffectiveDate was not reached
         if(!any(Dates<=EffectiveDate)){
                 Dates <- c(Dates,EffectiveDate)
         }
-        
+
         # Roll Weekdays according to convention
         Dates <- RollWeekday(Day = Dates,BusDayConv = BusDayConv)
-        
+
         # Remove Historical Dates before ValDate (but include last date (~clean price))
         if(!is.null(ValDate)){
                 # Parse the ValDate also
                 ValDate <- ParseDate(DateToParse = ValDate)
-                
+
                 # Cut off historical cashflow (including T-1)
                 if(ValDate > EffectiveDate){
-                        Dates <- Dates[1:which.max(Dates<ValDate)]                        
+                        Dates <- Dates[1:which.max(Dates<ValDate)]
                 }
         }
 
         # Sort unique dates
         Dates <- sort(unique(Dates))
-        
+
         # Return output
         if(Output == "Vector"){
                 return(Dates)

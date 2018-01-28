@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 
 # ralibr
 
-The goal of ralibr is to ...
+The ralibr package is a repository with a host of functions used in the Risk Advisory FSI department
 
 ## Installation
 

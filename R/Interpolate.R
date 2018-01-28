@@ -1,13 +1,17 @@
 #' Interpolation
 #'
-#' @description Function useful for Interpolation. X can be either "Dates" or "Numeric", allowing to easily Interpolate on discount curves.
-#' The interpolation can be done using linear or cubic-spline.
+#' @description Function useful for Interpolation.
+#'    can be either "Dates" or "Numeric", allowing to
+#'    easily Interpolate on discount curves.
+#'    The interpolation can be done using linear or cubic-spline.
 #'
-#' @param X,Y Vectors giving the coordinates of the points to be interpolated. X can optionally be "Date" format,
-#'            allowing to interpolate on a typical discount curve structure
+#' @param X,Y Vectors giving the coordinates of the points to be interpolated.
+#'    X can optionally be "Date" format,
+#'    allowing to interpolate on a typical j
+#'    discount curve structure.
 #'
-#' @param x A single point specifying where to interpolate on observations of X. Can be numeric, Date
-#'    or character ("YYYY-MM-DD")
+#' @param x A single point specifying where to interpolate on observations of X.
+#'    Can be numeric, Date or character ("YYYY-MM-DD")
 #'
 #' @param method Either linear ("l") or cubicspline ("cs")
 #'
@@ -16,6 +20,7 @@
 #' @examples
 #' Interpolate(X = c(1,3,5),Y = c(100,200,300),x = 2,method="l")
 #' Interpolate(Curve$Date, Curve$Discount_Factors, "2025-03-03", "linear")
+#'
 #' @export
 
 Interpolate <- function(X, Y, x, method = "linear"){
@@ -46,5 +51,4 @@ Interpolate <- function(X, Y, x, method = "linear"){
         else stop("Input 'method' is wrong")
 
         return(Interpolate)
-
 }
