@@ -4,7 +4,7 @@
 \alias{yearfrac}
 \title{Calculate yearfraction between two Dates}
 \usage{
-yearfrac(DateBegin, DateEnd, DayCountConv = "ACT/360")
+
 }
 \arguments{
 \item{DateBegin}{The starting Date}

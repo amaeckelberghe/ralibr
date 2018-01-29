@@ -7,7 +7,14 @@
 bump_curve(Curve, Bump = 1e-04, IsDiscounts = TRUE)
 }
 \arguments{
-\item{IsDiscounts}{}
+\item{Curve}{A curve (discount or zero coupon)}
+
+\item{Bump}{The bump to apply}
+
+\item{IsDiscounts}{optional (default = TRUE) - indicates if the second column are discount facors or zero rates}
+}
+\value{
+A bumped curve
 }
 \description{
 Title

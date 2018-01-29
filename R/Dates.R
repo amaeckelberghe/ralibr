@@ -1,15 +1,20 @@
 #' Calculate yearfraction between two Dates
 #'
 #' @usage
+#'
 #' @param DateBegin The starting Date
 #' @param DateEnd The ending Date
 #' @param DayCountConv Day Count Convention for yearfraction calculation
 #'    Default is ACT/360. See also 'Details'
+#'
 #' @return Numeric value representing years between Staring Date and Ending Date
+#'
 #' @details Dates can be inserted as character (DD-MM-YYYY or YYYY-MM-DD).
 #'    Possible Day Count Convetions to use are "ACT/360", "ACT/365, "ACT/ACT", "30/360".
 #'    The argument is case-insensitive and "/" is optional. ("ACT360",...)
+#'
 #' @export
+#'
 #' @examples yearfrac("2015-01-01","2020-01-01","act360")
 yearfrac <- function(DateBegin,
                      DateEnd,
@@ -48,7 +53,7 @@ yearfrac <- function(DateBegin,
                 Fracs <- DateSpan / YearSpan
         }
         # 30/360
-        else if(toupper(DayCountConv)=="30/360"|toupper(DayCountConv)=="30/360U"){
+        else if(toupper(DayCountConv)=="30/360"|toupper(DayCountConv)=="30/360U"|toupper(DayCountConv)=="30360"){
                 sd <- as.POSIXlt(x = DateBegin)
                 ed <- as.POSIXlt(x = DateEnd)
                 Fracs <- ((ed$year-sd$year)*360+(ed$mon-sd$mon)*30+(ed$mday-sd$mday))/360
@@ -79,7 +84,6 @@ yearfrac <- function(DateBegin,
 #'
 #' @return A vector or dateframe of Dates
 #'
-#' @export
 #'
 generate_dates <- function(StartDate,
         EndDate,
@@ -227,8 +231,12 @@ parse_date <- function(DateToParse,
 #'
 roll_weekday <- function(Day,
         BusDayConv="F"){
-        # Function takes a Date or a list of dates and converts using the given Business Day Convention
 
+
+        # For BERT Integration reserve Numerics for Excel dates
+        if (is.numeric(Day)){as.Date(x = Day,origin="30-12-1899")}
+
+        # Function takes a Date or a list of dates and converts using the given Business Day Convention
         NewDay <- Day
 
         IdxSun = weekdays(x = Day, abbreviate=TRUE)=="zo"

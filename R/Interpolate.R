@@ -25,13 +25,17 @@
 
 interpolate <- function(X, Y, x, method = "linear"){
 
+
+        # No longer using characters as Input
+
+        # if(class(x)=="character"){
+        #         x <- ParseDate(DateToParse = x)
+        # }
+
         # Convert the Vector X values in Column 1 to integers
-        if(class(x)=="character"){
-                x <- ParseDate(DateToParse = x)
-        }else if (class(X)=="Date"){
+        if (class(X)=="Date"){
                 X <- as.numeric(X)
         }
-
 
         # Check if Point is inside the Vector X range
         if (any(x<min(X))) stop("Point < min(X)")

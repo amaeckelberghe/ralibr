@@ -1,10 +1,11 @@
 #' Title
 #'
-#' @param Curve
-#' @param Bump
-#' @param IsDiscounts
+#' @param Curve A curve (discount or zero coupon)
+#' @param Bump The bump to apply
+#' @param IsDiscounts optional (default = TRUE) - indicates if the second column are discount facors or zero rates
 #'
-#' @return
+#' @return A bumped curve
+#'
 #' @export
 #'
 #' @examples
@@ -15,11 +16,12 @@ bump_curve <- function(Curve, Bump = 0.0001, IsDiscounts = TRUE){
 
         N <- length(Curve[,1])
         StartDates <- rep(x = Curve[1,1], N)
-        T <- Yearfrac(DateBegin = StartDates,DateEnd = Curve[,1],DayCountConv = "act/360")
+        T <- yearfrac(DateBegin = StartDates, DateEnd = Curve[,1], DayCountConv = "act/360")
         if(IsDiscounts){
-                ZeroRates <- Discount2Rate(DF = Curve[,2], T = T, Compounding = "CC")
+                ZeroRates <- discount_to_rate(DF = Curve[,2], T = T, Compounding = "CC")
                 ZeroRatesBump <- ZeroRates + Bump
-                CurveBump <- Curve; CurveBump[,2] <- Rate2Discount(Rate = ZeroRatesBump,T = T,Compounding = "CC")
+                CurveBump <- Curve;
+                CurveBump[,2] <- rate_to_discount(Rate = ZeroRatesBump,T = T,Compounding = "CC")
         }else{
                 CurveBump <- Curve
                 CurveBump <- Curve[,2]+Bump

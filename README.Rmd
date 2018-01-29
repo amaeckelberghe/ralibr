@@ -1,5 +1,5 @@
 ---
-output: github_document
+output: ralibr
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -14,15 +14,26 @@ knitr::opts_chunk$set(
 
 # ralibr
 
-The ralibr package is a repository with a host of functions used in the Risk Advisory FSI department
+ralibr is a repository with a range of functions used in the Risk Advisory FSI department
 
 ## Installation
 
-You can install ralibr from github with:
-
 ```{r gh-installation, eval = FALSE}
-# install.packages("devtools")
+# To use the Excel integration first download and install BERT.
+
+# If installing for R
+install.packages("devtools")
 devtools::install_github("ThVWh/ralibr")
+
+# If installing for Excel (via BERT console)
+install.packages("devtools")
+
+# and Add this to functions.R
+BERT$ClearUserButtons();
+BERT$AddUserButton("Update ralibr",function(){
+        library(devtools);
+        install_github("ThVWh/ralibr")})
+BERT$AddUserButton("Install ralibr",function(){BERT$UsePackage("ralibr","ralibr")})
 ```
 
 ## Example
