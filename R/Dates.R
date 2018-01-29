@@ -293,7 +293,7 @@ attr( roll_weekday, "description" ) <- list(
 #'
 #' @return a numeric value representing an Excel date
 
-date_to_excel <- function(d1){d <- d <- as.numeric(as.Date('2017-05-15') -as.Date(0, origin="1899-12-30", tz='UTC'))}
+date_to_excel <- function(d1){d <- d <- as.numeric(d1 - as.Date(0, origin="1899-12-30", tz='UTC'))}
 
 roll_month_vec <- function(Date,Offset){as.Date(sapply(Date, rollmomth, Offset), origin="1970-01-01")}
 roll_month <- function(Date,Offset){seq(Date, by = paste (Offset, "months"), length = 2)[2]}
