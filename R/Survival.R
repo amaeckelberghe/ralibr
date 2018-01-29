@@ -43,3 +43,10 @@ survival <- function(SurvivalDate, ValuationDate, Maturities, Hazards, Conventio
 
         return(survival)
 }
+attr( survival, "description" ) <- list(
+        "Calculate Survival probability from Hazard rates",
+        SurvivalDate="Survival probability date",
+        ValuationDate="The Hazard rate term structure valuation date",
+        Maturities="The Hazard rate term structure maturities",
+        Hazards="The Hazard rate values",
+        Convention="optional - Day count convention to use")

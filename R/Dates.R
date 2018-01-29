@@ -54,6 +54,12 @@ yearfrac <- function(DateBegin,
 
         return(Fracs)
 }
+attr( yearfrac, "description" ) <- list(
+        "Calculate a Yearfraction between dates",
+        DateBegin="Starting date",
+        DateEnd="Ending date",
+        DayCountConv="optional - Day count convention"
+);
 
 
 
@@ -139,7 +145,7 @@ generate_dates <- function(StartDate,
         # Remove Historical Dates before ValDate (but include last date (~clean price))
         if(!is.null(ValDate)){
                 # Parse the ValDate also incase its in Excel numeric value
-                ValDate <- parse_date(DateToParse = ValDate)
+                ValDate <- parse_date_internal(DateToParse = ValDate)
 
                 # Cut off historical cashflow (including T-1)
                 if(ValDate > StartDate){
@@ -150,11 +156,12 @@ generate_dates <- function(StartDate,
         # Sort unique dates
         Dates <- sort(unique(Dates))
 
-        # Export in excel numeric values
-        Dates <- sapply(X = Dates,FUN = date_to_excel)
-
         # Return output
         if(Output == "Vector"){
+
+                # Export in excel numeric values
+                Dates <- sapply(X = Dates,FUN = date_to_excel)
+
                 return(Dates)
         }
         if(Output == "Frame"){
@@ -167,6 +174,17 @@ generate_dates <- function(StartDate,
                 stop("Wrong Output type. Choose 'Vector' or 'Frame'")
         }
 }
+attr( generate_dates, "description" ) <- list(
+        "Generate a sequence of dates",
+        StartDate="Starting date for sequency",
+        EndDate="Ending date for sequence",
+        ValDate="optional - Valuation date",
+        SecondLast="optional - Second to last date",
+        CouponFreq="optional - Frequency of dates",
+        BusDayConv="optional - Business day convention to apply to sequence of dates",
+        IMM="Generate IMM business days",
+        Ouput="Only use Vector in Excel"
+);
 
 #' Calculate the next IMM Date
 #'
@@ -340,23 +358,23 @@ attr( roll_weekday, "description" ) <- list(
 date_to_excel <- function(d1){d <- as.numeric(d1 - as.Date(0, origin="1899-12-30", tz='UTC'))}
 
 
-#' Title
+#' Rolling months
 #'
-#' @param Date
-#' @param Offset
+#' @param Date a vector of Dates
+#' @param Offset amount of months to roll
 #'
-#' @return
+#' @return a Date
 #'
 roll_month_vec <- function(Date,Offset){
         as.Date(sapply(Date, rollmomth, Offset), origin="1970-01-01")
 }
 
-#' Title
+#' Rolling months
 #'
-#' @param Date
-#' @param Offset
+#' @param Date a Date
+#' @param Offset amount of months to roll
 #'
-#' @return
+#' @return a Date
 #'
 roll_month <- function(Date,Offset){
         seq(Date, by = paste (Offset, "months"), length = 2)[2]

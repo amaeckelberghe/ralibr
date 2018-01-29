@@ -2,7 +2,7 @@
 % Please edit documentation in R/Curves.R
 \name{rate_to_discount}
 \alias{rate_to_discount}
-\title{Title}
+\title{Convert rates to discount factors}
 \usage{
 rate_to_discount(Rate, T, Compounding = "CC")
 }
@@ -10,5 +10,5 @@ rate_to_discount(Rate, T, Compounding = "CC")
 \item{Compounding}{}
 }
 \description{
-Title
+Convert rates to discount factors
 }

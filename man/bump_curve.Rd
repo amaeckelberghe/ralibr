@@ -2,7 +2,7 @@
 % Please edit documentation in R/Curves.R
 \name{bump_curve}
 \alias{bump_curve}
-\title{Title}
+\title{Bump a given curve}
 \usage{
 bump_curve(Curve, Bump = 1e-04, IsDiscounts = TRUE)
 }
@@ -17,5 +17,9 @@ bump_curve(Curve, Bump = 1e-04, IsDiscounts = TRUE)
 A bumped curve
 }
 \description{
-Title
+Bump a given curve
+}
+\examples{
+bump_curve(Curve)
+
 }

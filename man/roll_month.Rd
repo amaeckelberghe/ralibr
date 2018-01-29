@@ -2,16 +2,18 @@
 % Please edit documentation in R/Dates.R
 \name{roll_month}
 \alias{roll_month}
-\title{Title}
+\title{Rolling months}
 \usage{
 roll_month(Date, Offset)
 }
 \arguments{
-\item{Offset}{}
+\item{Date}{a Date}
+
+\item{Offset}{amount of months to roll}
 }
 \value{
-
+a Date
 }
 \description{
-Title
+Rolling months
 }
