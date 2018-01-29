@@ -198,8 +198,6 @@ next_imm <- function(Date){
 #'
 #' @return a Date
 #'
-#' @import lubridate:::date_parse_time
-#'
 parse_date <- function(DateToParse,
         DateType = "European"){
 
