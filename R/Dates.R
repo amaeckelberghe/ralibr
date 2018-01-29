@@ -1,4 +1,4 @@
-#' Calculate yearfraction between two Dates
+#' Calculate fraction of years between two Dates
 #'
 #' @usage
 #'
@@ -9,7 +9,7 @@
 #'
 #' @return Numeric value representing years between Staring Date and Ending Date
 #'
-#' @details Dates can be inserted as character (DD-MM-YYYY or YYYY-MM-DD).
+#' @details Dates can be inserted as character (DD-MM-YYYY or YYYY-MM-DD) and "-" is optional. (YYYYMMDD)
 #'    Possible Day Count Convetions to use are "ACT/360", "ACT/365, "ACT/ACT", "30/360".
 #'    The argument is case-insensitive and "/" is optional. ("ACT360",...)
 #'
@@ -20,19 +20,9 @@ yearfrac <- function(DateBegin,
                      DateEnd,
                      DayCountConv = "ACT/360"){
 
-        # First check Dates formatting
-        # R functionality only take Date class or character class
-        # Excel functionality reserves the Numeric class
-        if (is.numeric(DateBegin)){DateBegin <- as.Date(x = DateBegin,origin = "30-12-1899")}
-        if (is.numeric(DateEnd)){DateEnd <- as.Date(x = DateEnd,origin = "30-12-1899")}
-        if (is.character(DateBegin)){
-                stop("Wrong Date format")
-        }
-        if (is.character(DateEnd)){
-                stop("Wrong Date format")
-        }
-        #DateBegin <- parse_date(DateBegin)
-        #DateEnd <- parse_date(DateEnd)
+
+        DateBegin <- parse_date_internal(DateToParse = DateBegin)
+        DateEnd <- parse_date_internal(DateToParse = DateEnd)
 
         # ACT360
         if(toupper(DayCountConv)=="ACT/360"|toupper(DayCountConv)=="ACT360"){
@@ -84,23 +74,25 @@ yearfrac <- function(DateBegin,
 #'
 #' @return A vector or dateframe of Dates
 #'
-#'
+#' @export
 generate_dates <- function(StartDate,
-        EndDate,
-        ValDate = NULL,
-        SecondLast = NULL,
-        CouponFreq = "M",
-        BusDayConv = "F",
-        IMM = FALSE,
-        Output = "Vector"){
+                           EndDate,
+                           ValDate = NULL,
+                           SecondLast = NULL,
+                           CouponFreq = "M",
+                           BusDayConv = "F",
+                           IMM = FALSE,
+                           Output = "Vector"){
+
         # Function generates payment dates moving backward from the Maturity Date
         # Optional ValDate argument cuts off sequence just before ValDate (= Clean)
 
-        # Parsing Date to correct format
-        StartDate <- parse_date(DateToParse = StartDate)
-        EndDate <- parse_date(DateToParse = EndDate)
+        # Parsing Date to correct R date format since function is exported.
+        StartDate <- parse_date_internal(DateToParse = StartDate)
+        EndDate <- parse_date_internal(DateToParse = EndDate)
 
         if(IMM){
+                warning("unsure of correct functionality on IMM dates")
                 CouponFreq <- "Q"
                 EndDate <- next_imm(Date = EndDate)
                 SecondLast <- NULL # Ignore this if we use IMM dates
@@ -126,8 +118,9 @@ generate_dates <- function(StartDate,
                 stop("Wrong Coupon Frequency input")
         }
 
+        # slightly more complicated when secondlast is defined
         if(!is.null(SecondLast)){
-                SecondLast <- parse_date(DateToParse = SecondLast)
+                SecondLast <- parse_date_internal(DateToParse = SecondLast)
                 Dates <- seq.Date(from = SecondLast,to = StartDate,by = Step)
                 Dates <- c(EndDate,Dates,StartDate)
         }else{
@@ -139,12 +132,13 @@ generate_dates <- function(StartDate,
                 Dates <- c(Dates,StartDate)
         }
 
-        # Roll Weekdays according to convention
-        Dates <- RollWeekday(Day = Dates,BusDayConv = BusDayConv)
+        # Roll Weekdays according to convention (Parse afterwards)
+        Dates <- roll_weekday(Day = Dates, BusDayConv = BusDayConv)
+        Dates <- parse_date_internal(Dates)
 
         # Remove Historical Dates before ValDate (but include last date (~clean price))
         if(!is.null(ValDate)){
-                # Parse the ValDate also
+                # Parse the ValDate also incase its in Excel numeric value
                 ValDate <- parse_date(DateToParse = ValDate)
 
                 # Cut off historical cashflow (including T-1)
@@ -155,6 +149,9 @@ generate_dates <- function(StartDate,
 
         # Sort unique dates
         Dates <- sort(unique(Dates))
+
+        # Export in excel numeric values
+        Dates <- sapply(X = Dates,FUN = date_to_excel)
 
         # Return output
         if(Output == "Vector"){
@@ -195,19 +192,18 @@ next_imm <- function(Date){
 }
 
 
-#' Parsing character to Dates class
+#' Parsing of dates to Excel numeric value
 #'
 #' @param DateToParse Input date value (integer/character/date)
 #' @param DateType optional (default = "European") - format for DateToParse
 #'
-#' @return a Date
+#' @return a Date in R date format
 #'
-#' @export
 #'
-parse_date <- function(DateToParse, DateType = "European"){
+parse_date_internal <- function(DateToParse, DateType = "European"){
 
-        # Numerics are reserved for Excel integration
-        if(is.numeric(DateToParse)){DateToParse <- as.Date(x = DateToParse,origin = "30-12-1899")}
+        # Numerics are reserved for Excel integration and converted to R Dates.
+        if(is.numeric(DateToParse)){DateToParse <- as.Date(x = DateToParse,origin = "1899-12-30")}
 
         # If DateToParse is a character we parse it with DateType formating
         if(is.character(x = DateType)){
@@ -226,8 +222,51 @@ parse_date <- function(DateToParse, DateType = "European"){
         # Output warning in case we return NA value
         if(any(is.na(x = date))){warning("ParseDate failed to return a Date")}
 
+        # We don't convert to Excel numeric values for internal use
         return(date)
 }
+
+#' Parsing of dates to Excel numeric value
+#'
+#' @param DateToParse Input date value (integer/character/date)
+#' @param DateType optional (default = "European") - format for DateToParse
+#'
+#' @return a Date in Excel numeric value
+#'
+#' @export
+#'
+parse_date <- function(DateToParse, DateType = "European"){
+
+        # Numerics are reserved for Excel integration
+        if(is.numeric(DateToParse)){DateToParse <- as.Date(x = DateToParse,origin = "1899-12-30")}
+
+        # If DateToParse is a character we parse it with DateType formating
+        if(is.character(x = DateType)){
+                if(toupper(DateType)=="EUROPEAN"){
+                        date <- as.Date(lubridate::parse_date_time(x = DateToParse,orders = c("dmy","ymd")))
+                }else if(toupper(DateType)=="AMERICAN"){
+                        date <- as.Date(lubridate::parse_date_time(x = DateToParse,orders = c("mdy","ymd")))
+                }else{
+                        stop("Wrong DateType")
+                }
+        }
+
+        # If DateToParse is a Date then do nothing
+
+
+        # Output warning in case we return NA value
+        if(any(is.na(x = date))){warning("ParseDate failed to return a Date")}
+
+        # Exportable function so output is an Excel numeric value
+        date <- date_to_excel(d1 = date)
+
+        return(date)
+}
+attr( parse_date, "description" ) <- list(
+        "Parsing of dates to Excel numeric value",
+        DateToParse="Input date value (integer/character/date)",
+        DateType="optional (default = European) - format for DateToParse"
+);
 
 
 #' Rolls a date for a given Business Day Convention
@@ -239,12 +278,11 @@ parse_date <- function(DateToParse, DateType = "European"){
 #'
 #' @export
 #'
-roll_weekday <- function(Day,
-        BusDayConv="F"){
+roll_weekday <- function(Day, BusDayConv="F"){
 
 
         # For BERT Integration reserve Numerics for Excel dates
-        if (is.numeric(Day)){Day = as.Date(x = Day,origin = "30-12-1899")}
+        Day <- parse_date_internal(Day)
 
         # Function takes a Date or a list of dates and converts using the given Business Day Convention
         NewDay <- Day
@@ -287,13 +325,39 @@ attr( roll_weekday, "description" ) <- list(
         BusDayConv="a Business Day Convention"
 );
 
+
+
+
 #' Convert a date in R to an excel numeric value
 #'
 #' @param d1 a Date in R
 #'
+#' @description Every function exported to the user that returns a date
+#'    must return a date value in Excel numeric value.
+#'
 #' @return a numeric value representing an Excel date
 
-date_to_excel <- function(d1){d <- d <- as.numeric(d1 - as.Date(0, origin="1899-12-30", tz='UTC'))}
+date_to_excel <- function(d1){d <- as.numeric(d1 - as.Date(0, origin="1899-12-30", tz='UTC'))}
 
-roll_month_vec <- function(Date,Offset){as.Date(sapply(Date, rollmomth, Offset), origin="1970-01-01")}
-roll_month <- function(Date,Offset){seq(Date, by = paste (Offset, "months"), length = 2)[2]}
+
+#' Title
+#'
+#' @param Date
+#' @param Offset
+#'
+#' @return
+#'
+roll_month_vec <- function(Date,Offset){
+        as.Date(sapply(Date, rollmomth, Offset), origin="1970-01-01")
+}
+
+#' Title
+#'
+#' @param Date
+#' @param Offset
+#'
+#' @return
+#'
+roll_month <- function(Date,Offset){
+        seq(Date, by = paste (Offset, "months"), length = 2)[2]
+}
