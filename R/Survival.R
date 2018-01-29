@@ -10,12 +10,12 @@
 #    the Survival Probability up to the SurvivalDate given the term structure of hazard rates
 #    We use the assumptions of piecewise constant hazard rates
 
-#' @return
+#' @return A survival percentage up to a given Date
 #'
-#' @export A survival percentage up to a given Date
+#' @export
 #'
 #' @examples
-Survival <- function(SurvivalDate, ValuationDate, Maturities, Hazards, Convention = "act/360"){
+survival <- function(SurvivalDate, ValuationDate, Maturities, Hazards, Convention = "act/360"){
         #
 
         # Extract EndDates before the SurvivalDate
@@ -39,7 +39,7 @@ Survival <- function(SurvivalDate, ValuationDate, Maturities, Hazards, Conventio
         }
 
         # Cumulative Survival is "Q = exp(SumProd(T*Lambda))"
-        Survival <- exp(-sum(Frame$Frac*Frame$Hazards))
+        survival <- exp(-sum(Frame$Frac*Frame$Hazards))
 
-        return(Survival)
+        return(survival)
 }
