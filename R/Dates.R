@@ -197,21 +197,31 @@ next_imm <- function(Date){
 
 #' Parsing character to Dates class
 #'
-#' @param DateToParse a character representing a date
-#' @param DateType optional (default="European") - Format of DateToParse
+#' @param DateToParse Input date value (integer/character/date)
+#' @param DateType optional (default = "European") - format for DateToParse
 #'
 #' @return a Date
 #'
-parse_date <- function(DateToParse,
-        DateType = "European"){
+#' @export
+#'
+parse_date <- function(DateToParse, DateType = "European"){
 
-        if(toupper(DateType)=="EUROPEAN"){
-                date <- as.Date(lubridate::parse_date_time(x = DateToParse,orders = c("dmy","ymd")))
-        }else if(toupper(DateType)=="AMERICAN"){
-                date <- as.Date(lubridate::parse_date_time(x = DateToParse,orders = c("mdy","ymd")))
-        }else{
-                stop("Wrong DateType")
+        # Numerics are reserved for Excel integration
+        if(is.numeric(DateToParse)){DateToParse <- as.Date(x = DateToParse,origin = "30-12-1899")}
+
+        # If DateToParse is a character we parse it with DateType formating
+        if(is.character(x = DateType)){
+                if(toupper(DateType)=="EUROPEAN"){
+                        date <- as.Date(lubridate::parse_date_time(x = DateToParse,orders = c("dmy","ymd")))
+                }else if(toupper(DateType)=="AMERICAN"){
+                        date <- as.Date(lubridate::parse_date_time(x = DateToParse,orders = c("mdy","ymd")))
+                }else{
+                        stop("Wrong DateType")
+                }
         }
+
+        # If DateToParse is a Date then do nothing
+
 
         # Output warning in case we return NA value
         if(any(is.na(x = date))){warning("ParseDate failed to return a Date")}
@@ -234,7 +244,7 @@ roll_weekday <- function(Day,
 
 
         # For BERT Integration reserve Numerics for Excel dates
-        if (is.numeric(Day)){as.Date(x = Day,origin="30-12-1899")}
+        if (is.numeric(Day)){Day = as.Date(x = Day,origin = "30-12-1899")}
 
         # Function takes a Date or a list of dates and converts using the given Business Day Convention
         NewDay <- Day

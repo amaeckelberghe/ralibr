@@ -7,9 +7,9 @@
 parse_date(DateToParse, DateType = "European")
 }
 \arguments{
-\item{DateToParse}{a character representing a date}
+\item{DateToParse}{Input date value (integer/character/date)}
 
-\item{DateType}{optional (default="European") - Format of DateToParse}
+\item{DateType}{optional (default = "European") - format for DateToParse}
 }
 \value{
 a Date
