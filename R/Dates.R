@@ -277,13 +277,23 @@ roll_weekday <- function(Day,
 
         # Change it to output an excel numeric value
         # Always parse_date afterwards when using in R
+        NewDay <- date_to_excel(d1 = NewDay)
+
         return(NewDay)
 }
 attr( roll_weekday, "description" ) <- list(
-        "olls a date for a given Business Day Convention",
+        "Rolls a date for a given Business Day Convention",
         Day="a Date",
-        DayCountConv="a Day Count Convention"
+        BusDayConv="a Business Day Convention"
 );
+
+#' Convert a date in R to an excel numeric value
+#'
+#' @param d1 a Date in R
+#'
+#' @return a numeric value representing an Excel date
+
+date_to_excel <- function(d1){d <- d <- as.numeric(as.Date('2017-05-15') -as.Date(0, origin="1899-12-30", tz='UTC'))}
 
 roll_month_vec <- function(Date,Offset){as.Date(sapply(Date, rollmomth, Offset), origin="1970-01-01")}
 roll_month <- function(Date,Offset){seq(Date, by = paste (Offset, "months"), length = 2)[2]}
