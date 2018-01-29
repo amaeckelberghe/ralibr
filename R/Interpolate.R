@@ -23,18 +23,15 @@
 #'
 #' @export
 
-Interpolate <- function(X, Y, x, method = "linear"){
+interpolate <- function(X, Y, x, method = "linear"){
 
         # Convert the Vector X values in Column 1 to integers
-        if (class(X)=="Date"){
-                X <- as.numeric(X)
-        }
-        if(class(x)=="Date"){
-                x <- as.numeric(x)
-        }
         if(class(x)=="character"){
                 x <- ParseDate(DateToParse = x)
+        }else if (class(X)=="Date"){
+                X <- as.numeric(X)
         }
+
 
         # Check if Point is inside the Vector X range
         if (any(x<min(X))) stop("Point < min(X)")

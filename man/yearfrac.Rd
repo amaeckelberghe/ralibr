@@ -7,9 +7,9 @@
 yearfrac(DateBegin, DateEnd, DayCountConv = "ACT/360")
 }
 \arguments{
-\item{DateBegin}{Starting Date}
+\item{DateBegin}{The starting Date}
 
-\item{DateEnd}{Ending Date}
+\item{DateEnd}{The ending Date}
 
 \item{DayCountConv}{Day Count Convention for yearfraction calculation
 Default is ACT/360. See also 'Details'}
@@ -22,11 +22,9 @@ Calculate yearfraction between two Dates
 }
 \details{
 Dates can be inserted as character (DD-MM-YYYY or YYYY-MM-DD).
-
-   Possible Day Count Convetions to use are "ACT/360","ACT/365, "ACT/ACT", "30/360".
+   Possible Day Count Convetions to use are "ACT/360", "ACT/365, "ACT/ACT", "30/360".
    The argument is case-insensitive and "/" is optional. ("ACT360",...)
 }
 \examples{
 yearfrac("2015-01-01","2020-01-01","act360")
-
 }

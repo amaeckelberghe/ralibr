@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-BumpCurve <- function(Curve, Bump = 0.0001, IsDiscounts = TRUE){
+bump_curve <- function(Curve, Bump = 0.0001, IsDiscounts = TRUE){
         # Take a single Curve and bump the Zero rates with 1 bps.
         # The default setting assumes that column 2 contains Discount factors
         # Output the new Discount curve (with dates)

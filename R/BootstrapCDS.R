@@ -1,17 +1,18 @@
-#' Title
+#' Bootstrap a CDS curve for hazard rates
 #'
-#' @param MarketData
-#' @param ZeroData
-#' @param ValuationDate
-#' @param Convention
-#' @param OutputDates
-#' @param LGD
-#' @param Output
+#' @usage
+#'
+#' @param MarketData CDS quotes for different Maturities
+#' @param ZeroData A discount curve
+#' @param ValuationDate Valuation date of the discount curve
+#' @param Convention Convetion to use
+#' @param OutputDates Date for output value
+#' @param LGD Paramter for Loss-Given-Default
+#' @param Output Type of Output
 #'
 #' @return
 #'
-#' @examples
-BootstrapCDS <- function(MarketData, ZeroData, ValuationDate, Convention, OutputDates = NULL, LGD, Output = "Hazard"){
+bootstrap_cds <- function(MarketData, ZeroData, ValuationDate, Convention, OutputDates = NULL, LGD, Output = "Hazard"){
         # Function loops over every Maturity in the MarketData matrix and bootstraps a Hazard rate implied by it
         # MarketData needs to be an Nx2 Matrix containing Maturities (integers) and Spreads (in bps)
         # ZeroData needs to be a Curve as an Nx2 Matrix containing Dates and Discount factors
@@ -111,7 +112,7 @@ BootstrapCDS <- function(MarketData, ZeroData, ValuationDate, Convention, Output
         if(!any(c(Output=="Hazard",Output=="Survival",Output=="Default"))){stop("Wrong Output Type")}
 
         # Put ValuationDate in Date
-        ValuationDate <- ParseDate(x = ValuationDate)
+        ValuationDate <- parse_date(x = ValuationDate)
 
         # The idea is to solve the Hazards recursively
         MarketData$Hazards <- rep(x = 0.01,times = length(MarketData[,1]))
