@@ -2,7 +2,7 @@
 % Please edit documentation in R/Dates.R
 \name{yearfrac}
 \alias{yearfrac}
-\title{Calculate yearfraction between two Dates}
+\title{Calculate fraction of years between two Dates}
 \usage{
 
 }
@@ -18,10 +18,10 @@ Default is ACT/360. See also 'Details'}
 Numeric value representing years between Staring Date and Ending Date
 }
 \description{
-Calculate yearfraction between two Dates
+Calculate fraction of years between two Dates
 }
 \details{
-Dates can be inserted as character (DD-MM-YYYY or YYYY-MM-DD).
+Dates can be inserted as character (DD-MM-YYYY or YYYY-MM-DD) and "-" is optional. (YYYYMMDD)
    Possible Day Count Convetions to use are "ACT/360", "ACT/365, "ACT/ACT", "30/360".
    The argument is case-insensitive and "/" is optional. ("ACT360",...)
 }

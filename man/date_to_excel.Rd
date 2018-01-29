@@ -13,5 +13,6 @@ date_to_excel(d1)
 a numeric value representing an Excel date
 }
 \description{
-Convert a date in R to an excel numeric value
+Every function exported to the user that returns a date
+   must return a date value in Excel numeric value.
 }
