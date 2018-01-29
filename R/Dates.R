@@ -235,7 +235,7 @@ parse_date <- function(DateToParse, DateType = "European"){
 #' @param Day A single Date or a vector of Dates
 #' @param BusDayConv A specified business day convention
 #'
-#' @return A Date
+#' @return A date in excel numeric format
 #'
 #' @export
 #'
@@ -274,8 +274,16 @@ roll_weekday <- function(Day,
                 NewDay[IdxSun] = Day[IdxSun] - 2
                 NewDay[IdxSat] = Day[IdxSat] - 1
         }
+
+        # Change it to output an excel numeric value
+        # Always parse_date afterwards when using in R
         return(NewDay)
 }
+attr( roll_weekday, "description" ) <- list(
+        "olls a date for a given Business Day Convention",
+        Day="a Date",
+        DayCountConv="a Day Count Convention"
+);
 
 roll_month_vec <- function(Date,Offset){as.Date(sapply(Date, rollmomth, Offset), origin="1970-01-01")}
 roll_month <- function(Date,Offset){seq(Date, by = paste (Offset, "months"), length = 2)[2]}

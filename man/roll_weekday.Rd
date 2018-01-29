@@ -12,7 +12,7 @@ roll_weekday(Day, BusDayConv = "F")
 \item{BusDayConv}{A specified business day convention}
 }
 \value{
-A Date
+A date in excel numeric format
 }
 \description{
 Rolls a date for a given Business Day Convention
