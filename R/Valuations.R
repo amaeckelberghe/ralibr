@@ -46,7 +46,7 @@ value_fixed_leg <- function(
 
 
         # Take ValDate as the first date in the Curve matrix (User needs to make sure this is correct)
-        ValDate <- Curve[1,1]
+        ValDate <- parse_date_internal(Curve[1,1])
 
         # Bump curve with the default 1 bp parallel increase
         CurveBumped <- bump_curve(Curve = Curve)
