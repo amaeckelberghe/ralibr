@@ -1,13 +1,14 @@
 Package: ralibr
-Title: What the Package Does (one line, title case)
+Title: Function library for Risk-Advisory FSI
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: person("Thibaut", "Van Weehaeghe", email = "tvanweehaeghe@deloitte.com", role = c("aut", "cre"))
+Description: Package with functions for valuation of financial instruments
 Depends: R (>= 3.4.1)
-License: What license is it under?
+License: MIT
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/ThVWh/ralibr
 Imports: 
-    lubridate
+    lubridate,
+    dplyr
 RoxygenNote: 6.0.1
