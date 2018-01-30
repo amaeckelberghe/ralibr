@@ -23,6 +23,7 @@
 #' @examples
 value_fixed_leg <- function(
         Curve,
+        ValDate,
         EffectiveDate,
         MaturityDate,
         SecondLast = NULL,
@@ -46,10 +47,12 @@ value_fixed_leg <- function(
 
 
         # Take ValDate as the first date in the Curve matrix (User needs to make sure this is correct)
-        ValDate <- parse_date_internal(Curve[1,1])
+        # ValDate <- parse_date_internal(Curve[1,1])
+        ValDate <- parse_date_internal(ValDate)
 
         # Bump curve with the default 1 bp parallel increase
         CurveBumped <- bump_curve(Curve = Curve)
+        CurveBumped[,1] <- parse_date_internal(CurveBumped[,1])
 
         # Generate the payment dates from Effective to Maturity, optionally including ValDate and SecondLast
         Dates <- generate_dates(StartDate = EffectiveDate,
@@ -58,18 +61,18 @@ value_fixed_leg <- function(
                                     CouponFreq = Frequency,
                                     BusDayConv = DayConv,
                                     ValDate = ValDate,
-                                    Output = "Frame")
+                                    Output = "Frame") # Output is in Date format !
 
         # Convert for internal use
         # Dates <- parse_date_internal(Dates)
 
-        # Create two vectors
+        # Create two vectors (no conversion needed)
         DatesBegin <- Dates$StartDates
         DatesEnd <- Dates$EndDates
 
         N <- length(DatesBegin)
 
-        # Roll
+        # Roll and parse because roll_weekday is exported
         DatesPay <- parse_date_internal(roll_weekday(Day = DatesEnd, BusDayConv = DayConv))
 
         # Yearfraction
@@ -175,6 +178,7 @@ value_fixed_leg <- function(
 value_floating_leg <- function(
         CurveDiscount,
         CurveTenor,
+        ValDate,
         EffectiveDate,
         MaturityDate,
         SecondLast = NULL,
@@ -199,11 +203,15 @@ value_floating_leg <- function(
         ## Output specifies what we want the function to return (Dirty, Clean, DV01, Table, List)
 
         # Take ValDate from the Curve
-        ValDate <- CurveDiscount[1,1]
+        # ValDate <- parse_date_internal(CurveDiscount[1,1])
+        ValDate <- parse_date_internal(ValDate)
+
 
         # Bump our curves with 1 bps parallel increase
         CurveDiscountBumped <- bump_curve(Curve = CurveDiscount)
+        CurveDiscountBumped[,1] <- parse_date_internal(CurveDiscountBumped[,1])
         CurveTenorBumped <- bump_curve(Curve = CurveTenor)
+        CurveTenorBumped <- parse_date_internal(CurveTenorBumped[,1])
 
         # Generate the Payment dates from Effective to Maturity, optionally including ValDate
         Dates <- generate_dates(StartDate = EffectiveDate,EndDate = MaturityDate,
@@ -211,7 +219,7 @@ value_floating_leg <- function(
                 CouponFreq = Frequency,
                 BusDayConv = DayConv,
                 ValDate = ValDate,
-                Output = "Frame")
+                Output = "Frame") # Output is in R dates
 
         # Create two vectors
         DatesEnd <- Dates$EndDates
@@ -219,11 +227,10 @@ value_floating_leg <- function(
 
         N <- length(DatesBegin)
 
+        # Roll and convert because roll_weekday is exported
         DatesPay <- parse_date_internal(roll_weekday(Day = DatesEnd, BusDayConv = DayConv))
 
-        DatesFrac <- yearfrac(DateBegin = DatesBegin,
-                DateEnd = DatesPay,
-                DayCountConv = DayCount)
+        DatesFrac <- yearfrac(DateBegin = DatesBegin, DateEnd = DatesPay,DayCountConv = DayCount)
 
         # What are the discount factors for the payment period end dates?
         DiscountFactors <- interpolate(X = CurveDiscount[,1],Y = CurveDiscount[,2], x = DatesEnd, method = "cs")
