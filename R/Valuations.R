@@ -1,41 +1,41 @@
-#' Title
+#' Value a fixed leg
 #'
-#' @param Curve
-#' @param EffectiveDate
-#' @param MaturityDate
-#' @param SecondLast
-#' @param Notional
-#' @param ExchangeNotional
-#' @param Currency
-#' @param CouponRate
-#' @param Frequency
-#' @param DayCount
-#' @param DayConv
-#' @param Direction
-#' @param Output
+#' @param Cv Discount Curve
+#' @param ExchNot Exchange of Notionals TRUE/FALSE
+#' @param CCY Currency
+#' @param Rate Coupon Rate
+#' @param Freq Coupon Rate Frequency
+#' @param DCC Day Count Convention
+#' @param BDC Business Day Convention
+#' @param Dir Direction PAY/SELL
+#' @param ValD Valuation Date
+#' @param EffD Effective Date
+#' @param MatD Maturity Date
+#' @param SecLast Second to last Payment Date
+#' @param Not Notional
+#' @param Out Output type
 #'
-#' @return
+#' @return Depends on Output type
 #' @export
 #'
 #' @importFrom dplyr lead
 #' @importFrom dplyr data_frame
 #'
 #' @examples
-value_fixed_leg <- function(
-        Curve,
-        ValDate,
-        EffectiveDate,
-        MaturityDate,
-        SecondLast = NULL,
-        Notional = 10000000,
-        ExchangeNotional = FALSE,
-        Currency = "EUR",
-        CouponRate = 0.01,
-        Frequency = "A",
-        DayCount = "ACT/360",
-        DayConv = "MF",
-        Direction = "PAY",
-        Output = "DIRTY"){
+value_fixed_leg <- function(Cv,
+        ValD,
+        EffD,
+        MatD,
+        SecLast = NULL,
+        Not = 10000000,
+        ExchNot = FALSE,
+        CCY = "EUR",
+        Rate = 0.01,
+        Freq = "A",
+        DCC = "ACT/360",
+        BDC = "MF",
+        Dir = "PAY",
+        Out = "DIRTY"){
 
         ## Valuation Function for a fixed leg of a standard swap
         ## Curve is a Nx2 matrix containing Dates and Discount Rates
@@ -48,19 +48,22 @@ value_fixed_leg <- function(
 
         # Take ValDate as the first date in the Curve matrix (User needs to make sure this is correct)
         # ValDate <- parse_date_internal(Curve[1,1])
-        ValDate <- parse_date_internal(ValDate)
+        ValD <- parse_date_internal(ValD)
 
         # Bump curve with the default 1 bp parallel increase
-        CurveBumped <- bump_curve(Curve = Curve)
+        CurveBumped <- bump_curve(Curve = Cv)
         CurveBumped[,1] <- parse_date_internal(CurveBumped[,1])
 
+        Cv[,1] <- parse_date_internal(Cv[,1])
+
+
         # Generate the payment dates from Effective to Maturity, optionally including ValDate and SecondLast
-        Dates <- generate_dates(StartDate = EffectiveDate,
-                                    EndDate = MaturityDate,
-                                    SecondLast = SecondLast,
-                                    CouponFreq = Frequency,
-                                    BusDayConv = DayConv,
-                                    ValDate = ValDate,
+        Dates <- generate_dates(StartDate = EffD,
+                                    EndDate = MatD,
+                                    SecondLast = SecLast,
+                                    CouponFreq = Freq,
+                                    BusDayConv = BDC,
+                                    ValDate = ValD,
                                     Output = "Frame") # Output is in Date format !
 
         # Convert for internal use
@@ -73,17 +76,17 @@ value_fixed_leg <- function(
         N <- length(DatesBegin)
 
         # Roll and parse because roll_weekday is exported
-        DatesPay <- parse_date_internal(roll_weekday(Day = DatesEnd, BusDayConv = DayConv))
+        DatesPay <- parse_date_internal(roll_weekday(Day = DatesEnd, BusDayConv = BDC))
 
         # Yearfraction
-        DatesFrac <- yearfrac(DateBegin = DatesBegin,DateEnd = DatesPay,DayCountConv = DayCount)
+        DatesFrac <- yearfrac(DateBegin = DatesBegin,DateEnd = DatesPay,DayCountConv = DCC)
 
         # Calculate the discount factor for the Payment End Dates
-        DiscountFactors <- interpolate(X = Curve[,1],Y = Curve[,2], x = DatesEnd, method = "cs")
+        DiscountFactors <- interpolate(X = Cv[,1],Y = Cv[,2], x = DatesEnd, method = "cs")
         DiscountFactorsBump <- interpolate(X = CurveBumped[,1], Y = CurveBumped[,2],x = DatesEnd, method = "cs")
 
         # Buy or Sell?
-        if(toupper(Direction)=="PAY"){
+        if(toupper(Dir)=="PAY"){
                 Sign <- rep(x = -1, N)
                 Type <- rep(x = "Pay Fixed")
         }else{
@@ -92,13 +95,13 @@ value_fixed_leg <- function(
         }
 
         # Calculate actual coupon payments per period
-        Rates               <- rep(x = CouponRate, N)
-        Notionals           <- rep(x = Notional,N)
+        Rates               <- rep(x = Rate, N)
+        Notionals           <- rep(x = Not,N)
         Cashflow            <- Sign * Notionals * Rates * DatesFrac
 
         # Do we add an exchange of principals on the end?
-        if(ExchangeNotional){
-                Cashflow[N]   <- Cashflow[N] + Sign[N]*Notional
+        if(ExchNot){
+                Cashflow[N]   <- Cashflow[N] + Sign[N]*Not
         }
 
         # Discount cashflows with the discount factor
@@ -111,7 +114,7 @@ value_fixed_leg <- function(
 
         # Create the cashflow table
         Table <- data_frame(Type = Type,
-                            CCY = rep(Currency,N),
+                            CCY = rep(CCY,N),
                             PeriodBegin = DatesBegin,
                             PeriodEnd = DatesEnd,
                             PeriodPay = DatesPay,
@@ -123,8 +126,8 @@ value_fixed_leg <- function(
                             CashflowDisc = CashflowDisc)
 
         # Accrual from last Reset to ValDate ?
-        AccrualTime <- yearfrac(DateBegin = DatesBegin[1], DateEnd = ValDate, DayCountConv = DayCount)
-        Accrual     <- Notional * CouponRate * AccrualTime * Sign[1]
+        AccrualTime <- yearfrac(DateBegin = DatesBegin[1], DateEnd = ValD, DayCountConv = DCC)
+        Accrual     <- Not * Rate * AccrualTime * Sign[1]
 
         # Clean Values
         ValueClean <- ValueDirty - Accrual
@@ -134,40 +137,53 @@ value_fixed_leg <- function(
         DV01 <- ValueDirtyBump-ValueDirty
 
         # What output type
-        if(toupper(Output)=="CLEAN"){OutputValue <- ValueClean}
-        else if(toupper(Output)=="DIRTY"){OutputValue <- ValueDirty}
-        else if(toupper(Output)=="TABLE"){OutputValue <- Table}
-        else if(toupper(Output)=="DV01"){OutputValue <- DV01}
-        else if(toupper(Output)=="LIST1"){OutputValue <- list(ValueClean, DV01, Table)}
-        else if(toupper(Output)=="LIST2"){OutputValue <- list(ValueDirty, DV01, Table)}
+        if(toupper(Out)=="CLEAN"){OutputValue <- ValueClean}
+        else if(toupper(Out)=="DIRTY"){OutputValue <- ValueDirty}
+        else if(toupper(Out)=="TABLE"){OutputValue <- Table}
+        else if(toupper(Out)=="DV01"){OutputValue <- DV01}
+        else if(toupper(Out)=="LIST1"){OutputValue <- list(ValueClean, DV01, Table)}
+        else if(toupper(Out)=="LIST2"){OutputValue <- list(ValueDirty, DV01, Table)}
 
         # Output
         return(OutputValue)
 
 }
-# attr( value_fixed_leg, "description" ) <- list(
-#         "Value a fixed leg",
-#         Notional="Notional amount")
-
+attr( value_fixed_leg, "description" ) <- list("Value a fixed leg",
+        Cv= '',
+        ExchNot= '',
+        CCY= '',
+        Rate= '',
+        Freq= '',
+        DCC= '',
+        BDC= '',
+        Dir= '',
+        ValD= '',
+        EffD= '',
+        MatD= '',
+        SecLast= '',
+        Not= '',
+        Out= ''
+);
 
 #' Title
 #'
-#' @param CurveDiscount
-#' @param CurveTenor
-#' @param EffectiveDate
-#' @param MaturityDate
-#' @param SecondLast
-#' @param LastFix
-#' @param Notional
-#' @param ExchangeNotional
-#' @param Currency
+#' @param CvDSC
+#' @param CvTNR
+#' @param ValD
+#' @param EffD
+#' @param MatD
+#' @param SecLast
+#' @param LstFix
+#' @param Not
+#' @param ExchNot
+#' @param CCY
+#' @param Freq
+#' @param Spr
+#' @param BDC
+#' @param DCC
+#' @param Dir
+#' @param Out
 #' @param Tenor
-#' @param Frequency
-#' @param Spread
-#' @param DayConv
-#' @param DayCount
-#' @param Direction
-#' @param Output
 #'
 #' @return
 #' @export
@@ -176,23 +192,23 @@ value_fixed_leg <- function(
 #'
 #' @examples
 value_floating_leg <- function(
-        CurveDiscount,
-        CurveTenor,
-        ValDate,
-        EffectiveDate,
-        MaturityDate,
-        SecondLast = NULL,
-        LastFix = 0,
-        Notional = 10000000,
-        ExchangeNotional = FALSE,
-        Currency = "EUR",
+        CvDSC,
+        CvTNR,
+        ValD,
+        EffD,
+        MatD,
+        SecLast = NULL,
+        LstFix = 0,
+        Not = 10000000,
+        ExchNot = FALSE,
+        CCY = "EUR",
         Tenor = "SA",
-        Frequency = "SA",
-        Spread = 0,
-        DayConv = "MF",
-        DayCount = "30/360",
-        Direction = "RECEIVE",
-        Output = "DIRTY"){
+        Freq = "SA",
+        Spr = 0,
+        BDC = "MF",
+        DCC = "30/360",
+        Dir = "RECEIVE",
+        Out = "DIRTY"){
 
         ## Valuation Function for a FLOATING leg of a standard swap
         ## Curve is a Nx2 matrix containing Dates and Discount Rates
@@ -204,21 +220,26 @@ value_floating_leg <- function(
 
         # Take ValDate from the Curve
         # ValDate <- parse_date_internal(CurveDiscount[1,1])
-        ValDate <- parse_date_internal(ValDate)
+        ValD <- parse_date_internal(ValD)
 
 
         # Bump our curves with 1 bps parallel increase
-        CurveDiscountBumped <- bump_curve(Curve = CurveDiscount)
+        CurveDiscountBumped <- bump_curve(Curve = CvDSC)
+        CurveTenorBumped <- bump_curve(Curve = CvTNR)
+
+        # Parse all Curves
         CurveDiscountBumped[,1] <- parse_date_internal(CurveDiscountBumped[,1])
-        CurveTenorBumped <- bump_curve(Curve = CurveTenor)
-        CurveTenorBumped <- parse_date_internal(CurveTenorBumped[,1])
+        CurveTenorBumped[,1] <- parse_date_internal(CurveTenorBumped[,1])
+
+        CvDSC[,1] <- parse_date_internal(CvDSC[,1])
+        CvTNR[,1] <- parse_date_internal(CvTNR[,1])
 
         # Generate the Payment dates from Effective to Maturity, optionally including ValDate
-        Dates <- generate_dates(StartDate = EffectiveDate,EndDate = MaturityDate,
-                SecondLast = SecondLast,
-                CouponFreq = Frequency,
-                BusDayConv = DayConv,
-                ValDate = ValDate,
+        Dates <- generate_dates(StartDate = EffD,EndDate = MatD,
+                SecondLast = SecLast,
+                CouponFreq = Freq,
+                BusDayConv = BDC,
+                ValDate = ValD,
                 Output = "Frame") # Output is in R dates
 
         # Create two vectors
@@ -228,17 +249,17 @@ value_floating_leg <- function(
         N <- length(DatesBegin)
 
         # Roll and convert because roll_weekday is exported
-        DatesPay <- parse_date_internal(roll_weekday(Day = DatesEnd, BusDayConv = DayConv))
+        DatesPay <- parse_date_internal(roll_weekday(Day = DatesEnd, BusDayConv = BDC))
 
-        DatesFrac <- yearfrac(DateBegin = DatesBegin, DateEnd = DatesPay,DayCountConv = DayCount)
+        DatesFrac <- yearfrac(DateBegin = DatesBegin, DateEnd = DatesPay,DayCountConv = DCC)
 
         # What are the discount factors for the payment period end dates?
-        DiscountFactors <- interpolate(X = CurveDiscount[,1],Y = CurveDiscount[,2], x = DatesEnd, method = "cs")
+        DiscountFactors <- interpolate(X = CvDSC[,1],Y = CvDSC[,2], x = DatesEnd, method = "cs")
         DiscountFactorsBump <- interpolate(X = CurveDiscountBumped[,1],Y = CurveDiscountBumped[,2],x = DatesEnd, method = "cs")
 
 
         # Do we pay or receive this leg?
-        if(toupper(Direction)=="PAY"){
+        if(toupper(Dir)=="PAY"){
                 Sign <- rep(x = -1,N)
                 Type <- rep(x = "Pay Floating",N)
         }else{
@@ -248,34 +269,34 @@ value_floating_leg <- function(
 
         # Calculate the forward rates given the current discount factors and add to last fixing
         if(N>1){
-                FwdRates <- c(LastFix,
+                FwdRates <- c(LstFix,
                         forward_rate(StartDate = DatesBegin[-1],
                                 EndDate = DatesEnd[-1],
-                                frame = CurveTenor,
-                                DayCount = DayCount))
-                FwdRatesBumped <- c(LastFix,
+                                frame = CvTNR,
+                                DayCount = DCC))
+                FwdRatesBumped <- c(LstFix,
                         forward_rate(StartDate = DatesBegin[-1],
                                 EndDate = DatesEnd[-1],
                                 frame = CurveTenorBumped,
-                                DayCount = DayCount))
+                                DayCount = DCC))
         }else{
-                FwdRates <- LastFix
-                FwdRatesBumped <- LastFix
+                FwdRates <- LstFix
+                FwdRatesBumped <- LstFix
         }
 
 
         # Spread and Notionals ?
-        Spreads <- rep(x = Spread,N)
-        Notionals <- rep(x = Notional,N)
+        Spreads <- rep(x = Spr,N)
+        Notionals <- rep(x = Not,N)
 
         # Calculate the actual coupon payments per payment period
         Cashflow <- Notionals * (FwdRates+Spreads) * Sign * DatesFrac
         CashflowBump <- Notionals * (FwdRatesBumped+Spreads) * Sign * DatesFrac
 
         # Principal Exchange
-        if(ExchangeNotional){
-                Cashflow[N]           <- Cashflow[N] + Sign[N]*Notional
-                CashflowBump[N]       <- CashflowBump[N] + Sign[N]*Notional
+        if(ExchNot){
+                Cashflow[N]           <- Cashflow[N] + Sign[N]*Not
+                CashflowBump[N]       <- CashflowBump[N] + Sign[N]*Not
         }
 
         # Value of the cashflows after discounting
@@ -288,20 +309,20 @@ value_floating_leg <- function(
 
         # The cashflow table with details
         Table <- data_frame(Type = Type,
-                CCY = rep(Currency,N),
+                CCY = rep(CCY,N),
                 PeriodBegin = DatesBegin,
                 PeriodEnd = DatesEnd,
                 PeriodPay = DatesPay,
                 YearFraction = DatesFrac,
                 Notional = Notionals,
-                Rate = FwdRates + Spread,
+                Rate = FwdRates + Spr,
                 Cashflow = Cashflow,
                 DiscountFactor = DiscountFactors,
                 CashflowDisc = CashflowDisc)
 
         # Accrual
-        AccrualTime <- yearfrac(DateBegin = DatesBegin[1], DateEnd = ValDate, DayCountConv = DayCount)
-        Accrual <- Notional * FwdRates[1] * AccrualTime * Sign[1]
+        AccrualTime <- yearfrac(DateBegin = DatesBegin[1], DateEnd = ValD, DayCountConv = DCC)
+        Accrual <- Not * FwdRates[1] * AccrualTime * Sign[1]
 
         # Clean values
         ValueClean <- ValueDirty - Accrual
@@ -311,12 +332,12 @@ value_floating_leg <- function(
         DV01 <- ValueDirtyBump-ValueDirty
 
         # What output type
-        if(toupper(Output)=="CLEAN"){OutputValue <- ValueClean}
-        if(toupper(Output)=="DIRTY"){OutputValue <- ValueDirty}
-        if(toupper(Output)=="TABLE"){OutputValue <- Table}
-        if(toupper(Output)=="DV01"){OutputValue <- DV01}
-        if(toupper(Output)=="LIST1"){OutputValue <- list(ValueClean, DV01, Table)}
-        if(toupper(Output)=="LIST2"){OutputValue <- list(ValueDirty, DV01, Table)}
+        if(toupper(Out)=="CLEAN"){OutputValue <- ValueClean}
+        else if(toupper(Out)=="DIRTY"){OutputValue <- ValueDirty}
+        else if(toupper(Out)=="TABLE"){OutputValue <- Table}
+        else if(toupper(Out)=="DV01"){OutputValue <- DV01}
+        else if(toupper(Out)=="LIST1"){OutputValue <- list(ValueClean, DV01, Table)}
+        else if(toupper(Out)=="LIST2"){OutputValue <- list(ValueDirty, DV01, Table)}
 
         # Output
         return(OutputValue)

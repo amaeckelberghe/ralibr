@@ -4,14 +4,13 @@
 \alias{value_floating_leg}
 \title{Title}
 \usage{
-value_floating_leg(CurveDiscount, CurveTenor, EffectiveDate, MaturityDate,
-  SecondLast = NULL, LastFix = 0, Notional = 1e+07,
-  ExchangeNotional = FALSE, Currency = "EUR", Tenor = "SA",
-  Frequency = "SA", Spread = 0, DayConv = "MF", DayCount = "30/360",
-  Direction = "RECEIVE", Output = "DIRTY")
+value_floating_leg(CvDSC, CvTNR, ValD, EffD, MatD, SecLast = NULL,
+  LstFix = 0, Not = 1e+07, ExchNot = FALSE, CCY = "EUR", Tenor = "SA",
+  Freq = "SA", Spr = 0, BDC = "MF", DCC = "30/360", Dir = "RECEIVE",
+  Out = "DIRTY")
 }
 \arguments{
-\item{Output}{}
+\item{Tenor}{}
 }
 \description{
 Title

@@ -2,16 +2,44 @@
 % Please edit documentation in R/Valuations.R
 \name{value_fixed_leg}
 \alias{value_fixed_leg}
-\title{Title}
+\title{Value a fixed leg}
 \usage{
-value_fixed_leg(Curve, EffectiveDate, MaturityDate, SecondLast = NULL,
-  Notional = 1e+07, ExchangeNotional = FALSE, Currency = "EUR",
-  CouponRate = 0.01, Frequency = "A", DayCount = "ACT/360",
-  DayConv = "MF", Direction = "PAY", Output = "DIRTY")
+value_fixed_leg(Cv, ValD, EffD, MatD, SecLast = NULL, Not = 1e+07,
+  ExchNot = FALSE, CCY = "EUR", Rate = 0.01, Freq = "A",
+  DCC = "ACT/360", BDC = "MF", Dir = "PAY", Out = "DIRTY")
 }
 \arguments{
-\item{Output}{}
+\item{Cv}{Discount Curve}
+
+\item{ValD}{Valuation Date}
+
+\item{EffD}{Effective Date}
+
+\item{MatD}{Maturity Date}
+
+\item{SecLast}{Second to last Payment Date}
+
+\item{Not}{Notional}
+
+\item{ExchNot}{Exchange of Notionals TRUE/FALSE}
+
+\item{CCY}{Currency}
+
+\item{Rate}{Coupon Rate}
+
+\item{Freq}{Coupon Rate Frequency}
+
+\item{DCC}{Day Count Convention}
+
+\item{BDC}{Business Day Convention}
+
+\item{Dir}{Direction PAY/SELL}
+
+\item{Out}{Output type}
+}
+\value{
+Depends on Output type
 }
 \description{
-Title
+Value a fixed leg
 }

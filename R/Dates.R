@@ -217,6 +217,7 @@ next_imm <- function(Date){
 #'
 #' @return a Date in R date format
 #'
+#' @importFrom  lubridate parse_date_time
 #'
 parse_date_internal <- function(DateToParse, DateType = "European"){
 
@@ -355,7 +356,9 @@ attr( roll_weekday, "description" ) <- list(
 #'
 #' @return a numeric value representing an Excel date
 
-date_to_excel <- function(d1){d <- as.numeric(d1 - as.Date(0, origin="1899-12-30", tz='UTC'))}
+date_to_excel <- function(d1){
+        d <- as.numeric(d1 - as.Date(0, origin="1899-12-30", tz='UTC'))
+        return(d)}
 
 
 #' Rolling months
