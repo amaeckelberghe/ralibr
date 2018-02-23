@@ -189,7 +189,8 @@ attr( value_fixed_leg, "description" ) <- list("Value a fixed leg",
 #' @export
 #'
 #' @importFrom dplyr lead
-#'
+#' @importFrom dplyr data_frame
+
 #' @examples
 value_floating_leg <- function(
         CvDSC,
