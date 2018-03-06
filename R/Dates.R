@@ -98,7 +98,7 @@ generate_dates <- function(StartDate,
         EndDate <- parse_date_internal(DateToParse = EndDate)
 
         if(IMM){
-                warning("unsure of correct functionality on IMM dates")
+                #warning("unsure of correct functionality on IMM dates")
                 CouponFreq <- "Q"
                 EndDate <- next_imm(Date = EndDate)
                 SecondLast <- NULL # Ignore this if we use IMM dates
@@ -191,6 +191,9 @@ attr( generate_dates, "description" ) <- list(
 #' @param Date
 #'
 #' @return
+#' @importFrom lubridate month
+#' @importFrom lubridate year
+#' @importFrom lubridate day
 #'
 next_imm <- function(Date){
         Month <- month(Date)
@@ -205,7 +208,7 @@ next_imm <- function(Date){
         }
         Day <- 20
         Month <- ceiling(x = Month/3)*3
-        Date <- dmy(paste0(Day,"-",Month,"-",Year))
+        Date <- parse_date_internal(DateToParse = paste0(Day,"-",Month,"-",Year))
         return(Date)
 }
 
