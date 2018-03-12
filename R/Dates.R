@@ -35,25 +35,26 @@ yearfrac <- function(DateBegin,
         # ACTACT
         else if(toupper(DayCountConv)=="ACT/ACT"|toupper(DayCountConv)=="ACTACT"){
                 # THIS HAS BEEN CORRECTED
-                DateSpan = as.integer(DateEnd)-as.integer(DateBegin)
-                year1 = as.integer(substring(DateBegin,1,4))
-                year2 = as.integer(substring(DateEnd,1,4))
+                DateSpan = as.integer(DateEnd) - as.integer(DateBegin)
+                year1 = as.integer(substring(DateBegin, 1, 4))
+                year2 = as.integer(substring(DateEnd, 1, 4))
                 YearSpan = year2 - year1 + 1
-                LeapYear = rep(0,YearSpan)
+                LeapYear = rep(0, YearSpan)
                 Years = year1:year2
-                
-                for (i in 1:length(LeapYear)){
-                  if (Years[i]-4*floor(Years[i]/4)==0)   {
-                    if (Years[i]-100*floor(Years[i]/100)==0  && Years[i]-400*floor(Years[i]/400)==1) {
-                        LeapYear[i] = 0 
-                    }
-                    LeapYear[i] = 1
-                  }
+
+                for (i in 1:length(LeapYear)) {
+                        if (Years[i] - 4 * floor(Years[i] / 4) == 0)   {
+                                if (Years[i] - 100 * floor(Years[i] / 100) == 0  &&
+                                                Years[i] - 400 * floor(Years[i] / 400) == 1) {
+                                        LeapYear[i] = 0
+                                }
+                                LeapYear[i] = 1
+                        }
                 }
-                
+
                 Percentage365 = sum(LeapYear == 0)/length(LeapYear)
                 Percentage366 = sum(LeapYear == 1)/length(LeapYear)
-                
+
                 Fracs <- DateSpan/(365*Percentage365 + 366*Percentage366)
         }
         # 30/360
