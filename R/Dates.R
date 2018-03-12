@@ -42,6 +42,7 @@ yearfrac <- function(DateBegin,
                 LeapYear = rep(0, YearSpan)
                 Years = year1:year2
 
+                # Comment
                 for (i in 1:length(LeapYear)) {
                         if (Years[i] - 4 * floor(Years[i] / 4) == 0)   {
                                 if (Years[i] - 100 * floor(Years[i] / 100) == 0  &&
