@@ -58,6 +58,16 @@ yearfrac <- function(DateBegin,
 
                 Fracs <- DateSpan/(365*Percentage365 + 366*Percentage366)
         }
+        else if (toupper(DayCountConv)=="ACT/ACT-ISDA" | toupper(DayCountConv)=="ACTACT-ISDA"){
+                sd <- as.POSIXlt(x = DateBegin)
+                ed <- as.POSIXlt(x = DateEnd)
+                span <- seq.POSIXt(from = sd, to = ed, by = "day")
+                N <- length(span)
+                leapyears <- lubridate::leap_year(date = span)
+                Pct_leap <- sum(leapyears) / N
+                Pct_non_leap <- 1 - Pct_leap
+                Fracs <- N / (365 * Pct_non_leap + 366 * Pct_leap)
+        }
         # 30/360
         else if(toupper(DayCountConv)=="30/360"|toupper(DayCountConv)=="30/360U"|toupper(DayCountConv)=="30360"){
                 sd <- as.POSIXlt(x = DateBegin)
