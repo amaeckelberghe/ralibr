@@ -9,9 +9,6 @@ next_imm(Date)
 \arguments{
 \item{Date}{}
 }
-\value{
-
-}
 \description{
 Calculate the next IMM Date
 }
