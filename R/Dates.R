@@ -385,3 +385,27 @@ roll_month_vec <- function(Date,Offset){
 roll_month <- function(Date,Offset){
         seq(Date, by = paste (Offset, "months"), length = 2)[2]
 }
+
+#' Convert a numeric Tenor to a String
+#'
+#' @param tenor
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tenor_to_string <- function(tenor){
+        if (tenor == "1") {
+                Tenor <- "m"
+        }
+        if (tenor == "3") {
+                Tenor <- "q"
+        }
+        if (tenor == "6") {
+                Tenor <- "sa"
+        }
+        if (tenor == "12") {
+                Tenor <- "a"
+        }
+        return(Tenor)
+}

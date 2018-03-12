@@ -343,3 +343,107 @@ value_floating_leg <- function(
         # Output
         return(OutputValue)
 }
+
+
+#' Title
+#'
+#' @param FwdRate
+#' @param Strike
+#' @param Vol
+#' @param Annuity
+#' @param Notional
+#' @param Shift
+#' @param model
+#'
+#' @return
+#' @export
+#'
+#' @examples
+value_swaption <-
+        function(FwdRate,
+                Strike,
+                Vol,
+                T,
+                Annuity,
+                Notional = 100000,
+                Shift = 0,
+                model = "BACH") {
+
+                # If Strike is missing then use ATM Strike (Do we really want to do this?)
+                if (missing(x = Strike)) {
+                        Strike <- FwdRate
+                }
+                if (missing(Vol)) {
+                        stop("Please provide a Volatility")
+                }
+
+                if (toupper(model) == "BACH") {
+                        Vol <- Vol / 10000
+                        Value <-
+                                Notional * Annuity * bachelier(
+                                        FwdRate = FwdRate,
+                                        Strike = Strike,
+                                        Vol = Vol,
+                                        Maturity = T
+                                )
+                }
+                else if (toupper(model) == "LOGN") {
+                        Vol <- Vol / 100
+                        Value <-
+                                Notional * Annuity * lognormal(
+                                        FwdRate = FwdRate,
+                                        Strike = Strike,
+                                        Vol = Vol,
+                                        Maturity = T,
+                                        Shift = Shift
+                                )
+                }
+                return(Value)
+        }
+
+#' Title
+#'
+#' @param FwdRate
+#' @param Strike
+#' @param Vol
+#' @param Maturity
+#' @param Shift
+#'
+#' @return
+#' @export
+#'
+#' @examples
+lognormal <- function(FwdRate, Strike, Vol, Maturity, Shift = 0) {
+        if (Maturity == 0) {
+                Value = max(0, FwdRate - Strike)
+        }
+        if (Maturity > 0) {
+                d1 <- (log((FwdRate + Shift) / (Strike + Shift)) + 0.5 * Vol ^ 2 * Maturity) / (Vol * sqrt(Maturity))
+                d2 <- d1 - Vol * sqrt(Maturity)
+                Value <- (FwdRate + Shift) * pnorm(d1, mean = 0, sd = 1) - (Strike + Shift) * pnorm(d2, mean = 0, sd = 1)
+        }
+        return(Value)
+}
+
+#' Title
+#'
+#' @param FwdRate
+#' @param Strike
+#' @param Vol
+#' @param Maturity
+#'
+#' @return
+#' @export
+#'
+#' @examples
+bachelier <- function(FwdRate, Strike, Vol, Maturity){
+
+        if(Maturity==0){
+                Bach = max(0,FwdRate - Strike)
+        }
+        if(Maturity>0){
+                d = (FwdRate - Strike)/(Vol*sqrt(Maturity))
+                Bach = (FwdRate - Strike)*pnorm(d,mean=0,sd=1)+Vol*sqrt(Maturity)*dnorm(d,mean=0,sd=1)
+        }
+        return(Bach)
+}
