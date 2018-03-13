@@ -20,22 +20,6 @@ calibrate_hull_white_swaption <-
                                 valdate = valdate
                         )
 
-                return(swaption_data)
-
-        }
-
-#' Title
-#'
-#' @param SwaptionVols
-#' @param TenorCurve
-#' @param DiscountCurve
-#' @param ValDate
-#'
-#' @return
-#'
-#' @importFrom bizdays offset
-#' @importFrom bizdays create.calendar
-
                 # Method 1: Calibrate 1 Alpha and 1 Sigma over the entire Cube
                 N <- dim(vols)[1]
                 K <- dim(vols)[2]-1
@@ -57,8 +41,19 @@ calibrate_hull_white_swaption <-
 
                 return(param_calibrated)
 
+                return(swaption_data)
+
         }
 
+#' Title
+#'
+#' @param parameters
+#' @param swaption_data
+#'
+#' @return
+#' @export
+#'
+#' @examples
 fit_surface <- function(parameters, swaption_data){
         # Extract frames from the list
         swaption_vols <- swaption_data$Vols
@@ -91,6 +86,9 @@ fit_surface <- function(parameters, swaption_data){
 #' @param valdate
 #'
 #' @return
+#'
+#' @importFrom bizdays create.calendar
+#' @importFrom bizdays offset
 #'
 #'
 #' @examples
