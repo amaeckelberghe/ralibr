@@ -154,6 +154,9 @@ interpolate <- function(X, Y, x, method = "linear"){
         if (class(X)=="Date"){
                 X <- as.numeric(X)
         }
+        if (class(x)=="Date"){
+                x <- as.numeric(x)
+        }
 
         # Check if Point is inside the Vector X range
         if (any(x<min(X))) stop("Point < min(X)")
@@ -164,7 +167,7 @@ interpolate <- function(X, Y, x, method = "linear"){
                 Interpolate <- approx(x = X,y = Y,xout = x)[[2]]
         }
         else if (method=="cs"|method=="cubicspline"|method=="spline"){
-                if(any(x>max(X))){warning("x > max(X) - Extrapolating")}
+                if(any(x>max(X))){warning("x > max(X) - Extrapolating")} # Maybe better to interpolate flat past final ?
                 Interpolate <- spline(x = X,y = Y,method = "natural",xout = x)[[2]]
         }
         else stop("Input 'method' is wrong")
@@ -172,3 +175,191 @@ interpolate <- function(X, Y, x, method = "linear"){
         return(Interpolate)
 }
 
+#' Title
+#'
+#' @param StartDate
+#' @param EndDate
+#' @param ValDate
+#' @param FloatingFreq
+#' @param cvDiscount
+#' @param cvTenor
+#' @param FloatingDCC
+#' @param FloatingBDC
+#' @param FixedDCC
+#' @param FixedBDC
+#' @param FixedFreq
+#'
+#' @return
+#'
+#'
+#' @examples
+forward_swap_rate <-
+        function(StartDate,
+                EndDate,
+                ValDate,
+                cvDiscount,
+                cvTenor,
+                FloatingFreq = "q",
+                FloatingDCC = "act/360",
+                FloatingBDC = "mf",
+                FixedFreq = "a",
+                FixedDCC = "30/360",
+                FixedBDC = "mf") {
+                # Function calculates a Forward Swap Rate with given input
+
+                ValDate <- parse_date_internal(DateToParse = ValDate, DateType = "European")
+
+                FixedLeg <-
+                        annuity_fixed_leg(
+                                StartDate = StartDate,
+                                EndDate = EndDate,
+                                ValDate = ValDate,
+                                cvDiscount = cvDiscount,
+                                CouponFreq = FixedFreq,
+                                BusDayConv = FixedBDC,
+                                DayCount = FixedDCC
+                        )
+
+                FloatingLeg <-
+                        annuity_floating_leg(
+                                StartDate = StartDate,
+                                EndDate = EndDate,
+                                ValDate = ValDate,
+                                cvDiscount = cvDiscount,
+                                cvTenor = cvTenor,
+                                CouponFreq = FloatingFreq,
+                                BusDayConv = FloatingBDC,
+                                DayCount = FloatingDCC
+                        )
+
+                # Fwd Swap Rate
+                FwdSwapRate <- FloatingLeg / FixedLeg
+
+                return(list(FwdSwapRate, FixedLeg, FloatingLeg))
+        }
+
+#' Title
+#'
+#' @param StartDate
+#' @param EndDate
+#' @param ValDate
+#' @param CouponFreq
+#' @param BusDayConv
+#'
+#' @return
+#' @export
+#'
+#' @importFrom dplyr lead
+#'
+#' @examples
+annuity_fixed_leg <-
+        function(StartDate,
+                EndDate,
+                ValDate,
+                cvDiscount,
+                CouponFreq = "A",
+                BusDayConv = "MF",
+                DayCount = "30/360") {
+
+                # Fixed leg Annuity
+                DatesBegin <-
+                        generate_dates(
+                                StartDate = StartDate,
+                                EndDate = EndDate,
+                                CouponFreq = CouponFreq,
+                                BusDayConv = BusDayConv,
+                                ValDate = ValDate,
+                                Output = "Frame"
+                        )
+                DatesEnd <- DatesBegin$EndDates
+                DatesBegin <- DatesBegin$StartDates
+
+                N = length(DatesBegin)
+
+                DatesFrac <-
+                        yearfrac(
+                                DateBegin = DatesBegin,
+                                DateEnd = DatesEnd,
+                                DayCountConv = DayCount
+                        )
+
+                DiscountFactors <-
+                        interpolate(
+                                X = cvDiscount[, 1],
+                                Y = cvDiscount[, 2],
+                                x = DatesEnd,
+                                method = "cs"
+                        )
+
+                FixedLeg <- sum(DiscountFactors * DatesFrac)
+
+                return(FixedLeg)
+        }
+
+#' Title
+#'
+#' @param StartDate
+#' @param EndDate
+#' @param ValDate
+#' @param cvDiscount
+#' @param cvTenor
+#' @param CouponFreq
+#' @param BusDayConv
+#' @param DayCount
+#'
+#' @return
+#' @importFrom dplyr lead
+#'
+#' @examples
+annuity_floating_leg <-
+        function(StartDate,
+                EndDate,
+                ValDate,
+                cvDiscount,
+                cvTenor,
+                CouponFreq = "Q",
+                BusDayConv = "MF",
+                DayCount = "act/360") {
+
+                # Calculate floating leg annuity
+                Dates <-
+                        generate_dates(
+                                StartDate = StartDate,
+                                EndDate = EndDate,
+                                CouponFreq = CouponFreq,
+                                BusDayConv = BusDayConv,
+                                ValDate = ValDate,
+                                Output = "Frame"
+                        )
+
+                DatesEnd <- Dates$EndDates
+                DatesBegin <- Dates$StartDates
+
+                N <- length(DatesBegin)
+
+                DatesFracFl <-
+                        yearfrac(
+                                DateBegin = DatesBegin,
+                                DateEnd = DatesEnd,
+                                DayCountConv = DayCount
+                        )
+                Fwds <-
+                        forward_rate(
+                                StartDate = DatesBegin,
+                                EndDate = DatesEnd,
+                                frame = cvTenor,
+                                DayCount = DayCount
+                        )
+
+                DiscountFactorsFl <-
+                        interpolate(
+                                X = cvDiscount[, 1],
+                                Y = cvDiscount[, 2],
+                                x = DatesEnd,
+                                method = "cs"
+                        )
+
+                FloatingLeg <- sum(Fwds * DatesFracFl * DiscountFactorsFl)
+
+                return(FloatingLeg)
+        }

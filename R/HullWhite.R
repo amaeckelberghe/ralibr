@@ -20,6 +20,22 @@ calibrate_hull_white_swaption <-
                                 valdate = valdate
                         )
 
+                return(swaption_data)
+
+        }
+
+#' Title
+#'
+#' @param SwaptionVols
+#' @param TenorCurve
+#' @param DiscountCurve
+#' @param ValDate
+#'
+#' @return
+#'
+#' @importFrom bizdays offset
+#' @importFrom bizdays create.calendar
+
                 # Method 1: Calibrate 1 Alpha and 1 Sigma over the entire Cube
                 N <- dim(vols)[1]
                 K <- dim(vols)[2]-1
@@ -149,6 +165,7 @@ convert_swaption_vols <-
                                                 BusDayConv = "mf",
                                                 Output = "Frame"
                                         )
+
 
                                 Output <-
                                         forward_swap_rate(
