@@ -76,8 +76,6 @@ fit_surface <- function(parameters, swaption_data){
 #'
 #' @return
 #'
-#' @importFrom bizdays offset
-#' @importFrom bizdays create.calendar
 #'
 #' @examples
 convert_swaption_vols <-
