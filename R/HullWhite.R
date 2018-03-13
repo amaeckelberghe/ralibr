@@ -35,6 +35,63 @@ calibrate_hull_white_swaption <-
 #'
 #' @importFrom bizdays offset
 #' @importFrom bizdays create.calendar
+
+                # Method 1: Calibrate 1 Alpha and 1 Sigma over the entire Cube
+                N <- dim(vols)[1]
+                K <- dim(vols)[2]-1
+
+                param_calibrated <- list()
+                param_initial <- c(0.004,0.02)
+
+                param_calibrated <-
+                        GenSA(
+                                par = param_initial,
+                                fn = fit_surface,
+                                lower = c(0, 0),
+                                upper = c(0.06, 0.06),
+                                control = list(threshold.stop = 0.01, max.time = 10 * 60)
+                        )
+
+
+
+
+                return(param_calibrated)
+
+        }
+
+fit_surface <- function(parameters, swaption_data){
+        # Extract frames from the list
+        swaption_vols <- swaption_data$Vols
+        swaption_prices <- swaption_data$Prices
+        swaption_strikes <- swaption_data$StrikesATM
+        swaption_annuities <- swaption_data$Annuities
+        swaption_dates <- swaption_data$Dates
+
+        # Dimensions
+        N <- dim(swaption_vols)[1]
+        K <- dim(swaption_vols)[2]-1
+
+        # Pre-allocate matrix
+        swaption_prices_calculated <- matrix(data = NA,nrow = N,ncol = K)
+
+        # Calculate all prices
+        for (i in 1:N){
+                for(j in 1:K){
+                        swaption_prices_calculated[i,j] <- payer_swaption_closed_form()
+                }
+        }
+
+}
+
+#' Title
+#'
+#' @param vols
+#' @param cvTenor
+#' @param cvDiscount
+#' @param valdate
+#'
+#' @return
+#'
 #'
 #' @examples
 convert_swaption_vols <-
@@ -109,29 +166,6 @@ convert_swaption_vols <-
                                                 Output = "Frame"
                                         )
 
-
-                                # Annuity & Fwd Swap Rate
-                                # NameOIS <-
-                                #         substr(
-                                #                 x = names(vols)[1],
-                                #                 start = 1,
-                                #                 stop = 3
-                                #         )
-                                # NameDSC <-
-                                #         paste0(
-                                #                 substr(
-                                #                         x = names(vols)[1],
-                                #                         start = 1,
-                                #                         stop = 3
-                                #                 ),
-                                #                 ".",
-                                #                 substr(
-                                #                         x = names(vols)[1],
-                                #                         start = 4,
-                                #                         stop = 4
-                                #                 ),
-                                #                 "M"
-                                #         )
 
                                 Output <-
                                         forward_swap_rate(

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 
 # ralibr
 
-ralibr is a repository with a range of functions used in the Risk Advisory FSI department
+ralibr is a repository with a range of functions
 
 ## Installation
 

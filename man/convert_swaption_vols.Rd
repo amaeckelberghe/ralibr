@@ -7,7 +7,7 @@
 convert_swaption_vols(vols, cvTenor, cvDiscount, valdate)
 }
 \arguments{
-\item{ValDate}{}
+\item{valdate}{}
 }
 \value{
 
