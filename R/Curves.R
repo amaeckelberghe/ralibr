@@ -74,6 +74,31 @@ forward_rate <- function(StartDate, EndDate, frame, DayCount = "act/360", compou
         return(forward_rate)
 }
 
+#' Title
+#'
+#' @param Curve
+#' @param t
+#' @param delta
+#'
+#' @return
+#' @export
+#'
+#' @examples
+instant_forward <- function(Curve, t, delta = 0.001) {
+
+        Curve[, 1] <- (Curve[, 1] - Curve[1, 1]) / 360
+        Curve[, 2] <- log(Curve[, 2])
+
+        Fwd1 <-
+                interpolate(X = Curve[,1],Y = Curve[,2],x = t,method = "cs")
+
+        Fwd2 <-
+                interpolate(X = Curve[,1],Y = Curve[,2],x = t + delta, method = "cs")
+
+        Inst_Fwd <- -(Fwd2 - Fwd1) / delta
+        return(Inst_Fwd)
+}
+
 #' Convert Discount Factors to Spot Rates
 #'
 #' @param DF A discount factor (numeric)
